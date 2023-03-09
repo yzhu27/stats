@@ -111,12 +111,13 @@ def bootstrap(y0, z0):
     return n / the['bootstrap'] >= the['conf']
 
 def dictsort(d):
-    sorteddict = sorted(d.items(), key=lambda item:item[0])
+    sorteddict = sorted(d.items(), key=lambda item:item[1])
     u = {}
+    n = 0
     for k,v in sorteddict:
-        u[k] = v
+        n+=1
+        u[n] = v
     return u
-
 
 
 def RX(t, s):
@@ -149,5 +150,78 @@ def merge(rx1, rx2):
     rx3['has'] = dictsort(rx3['has'])
     rx3['n'] = len(rx3['has'])
     return rx3
+
+def scottKnot(rxs):
+    def merges(i, j):
+        out = RX({},rxs[i]['name'])
+        for k in range(i,j+1):
+            out = merge(out, rxs[j]) # shouldn't here be k?
+        return out
+    def same(lo, cut, hi):
+        l = merges(lo, cut)
+        r = merges(cut+1, hi)
+        return cliffsDelta(l['has'],r['has']) and bootstrap(l['has'], r['has'])
+    
+    def recurse(lo, hi, rank):
+        b4 = merges(lo, hi)
+        best = 0
+        for j in range(lo,hi+1):
+            if j < hi:
+                l = merges(lo, j)
+                r = (j+1, hi)
+                now = (l['n']*(mid(l) - mid(b4))**2 + r['n']*(mid(r) - mid(b4))**2) / (l['n'] + r['n'])
+                if now > best:
+                    if abs(mid(l) - mid(r)) >= cohen:
+                        cut, best = j ,now
+        if cut and not same(lo,cut,hi):
+            rank = recurse(lo, cut, rank) + 1
+            rank = recurse(cut+1, hi ,rank)
+        else:
+            for i in range(lo, hi+1):
+                rxs[i]['rank']=rank
+    sortedrxs = sorted(rxs.items(), key = lambda item:mid(item[1]))
+    newrxs = {}
+    n=0
+    for k,v in sortedrxs:
+        n+=1
+        newrxs[n]=v
+    cohen = div(merges(1, len(newrxs))) * the['cohen']
+    recurse(1, len(rxs), 1)
+    return newrxs
+
+def tiles(rxs):
+    lo, hi = -math.inf, math.inf
+    for _,rx in rxs.items():
+        lo = math.min(lo,rx['has'][1])
+        hi = math.hi(hi, rx['has'][len(rx['has'])])
+    for _,rx in rxs.items():
+        t = rx['has']
+        u = {}
+        def of(x, most):
+            return math.max(1, math.min(most, x))
+        def at(x):
+            return t[of(int(len(t)*x), len(t))]
+        def pos(x):
+            return math.floor(of(the['width']*(x-lo)/int(hi-lo+1E-32), the['width']))
+        for i in range(1, the['width']+1):
+            u[1+len(u)]=" "
+        a,b,c,d,e = at(.1), at(.3), at(.5), at(.7), at(.9) 
+        A,B,C,D,E = pos(a), pos(b), pos(c), pos(d), pos(e)
+        for i in range(A, B+1):
+            u[i]="-"
+        for i in range(D, E+1):
+            u[i]="-"
+        u[the['width']//2] = "|"
+        u[C] = "*"
+        import string
+        rx['show'] = str(u)+"{"+string.format(the['fmt'],a)
+        for _,x in {b,c,d,e}.items():
+            rx['show'] += "," + string.format(the['fmt'],x)
+        rx['show'] += "}"
+    return rxs
+
+
+
+
 
     
