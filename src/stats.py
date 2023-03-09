@@ -1,5 +1,5 @@
 import math
-
+import random
 
 the = {
     'bootstrap':512,
@@ -33,12 +33,14 @@ def erf(x):
 
 def gaussian(mu=0, sd=1):
     # --> n; return a sample from a Gaussian with mean `mu` and sd `sd`
-    return mu + sd * math.sqrt(-2*math.log(math.random())) * math.cos(2*math.pi*math.random())
+    return mu + sd * math.sqrt(-2*math.log(random.random())) * math.cos(2*math.pi*random.random())
 
-def samples(t, n):
+def samples(t, n=None):
     u = {}
-    for i in range(1, n+1 if n is not None else len(t+1)):
-        u[i]=t[math.random(len(t))]
+    if len(t)!=0:
+        for i in range(1, n+1 if n is not None else len(t)+1):
+            u[i]=int(len(t)*random.random()) # this is fast but not accurate
+            # u[i]=random.choice(list(t.values())) # this is extreme slow but gives correct answer
     return u
 
 def cliffsDelta(ns1, ns2):
@@ -63,7 +65,7 @@ def add(i, x):
     i['m2'] += d*(x-i['mu'])
     i['sd'] = 0 if i['n']<2 else math.sqrt(i['m2']/(i['n']-1))
 
-def NUM(t):
+def NUM(t=None):
     i = {
         'n':0,
         'mu':0,
@@ -78,7 +80,7 @@ def delta(i, other):
     e = 1E-32
     y = i
     z = other
-    return math.abs(y['mu'] - z['mu']) / math.sqrt(e + y['sd']**2/y['n'] + z['sd']**2/z['n'])
+    return abs(y['mu'] - z['mu']) / math.sqrt(e + y['sd']**2/y['n'] + z['sd']**2/z['n'])
 
 def bootstrap(y0, z0):
     x, y, z, yhat, zhat = NUM(), NUM(), NUM(), {}, {}
@@ -223,5 +225,72 @@ def tiles(rxs):
 
 
 
+eg = {}
 
-    
+
+def okfun(n=1):
+    random.seed(n if n is not None else 1)
+eg['ok'] = okfun
+
+def numfun():
+    n = NUM({1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10})
+    print("  {}  {}  {}".format(n['n'],n['mu'],n['sd']))
+eg['num'] = numfun
+
+def gaussfun():
+    t = {}
+    for i in range(1,10**4+1):
+        t[1+len(t)]=gaussian(10,2)
+    n = NUM(t)
+    print("  {}  {}  {}".format(n['n'],n['mu'],n['sd']))
+eg['gauss'] = gaussfun
+
+def bootmufun():
+    a = {}
+    for i in range(1,10**4+1):
+        a[1+len(a)]=gaussian(10,1)
+    print("  "+"mu "+"sd "+"cliffs "+"boot "+"both ")
+    print("  "+"-- "+"-- "+"------ "+"---- "+"---- ")
+    for mu in range(100,111):
+        mu=float(format(mu*0.1, '.1f'))
+        b={}
+        for i in range(1,101):
+            b[1+len(b)]=gaussian(mu,1)
+        cl = cliffsDelta(a, b)
+        bs = bootstrap(a, b)
+        print(" {} 1 {}  {} {}".format(mu,cl,bs,cl and bs))
+# eg['bootmu'] = bootmufun
+
+def basicfun():
+    print("\t\tTrue \t{}\t{}".format(bootstrap({1:8,2:7,3:6,4:2,5:5,6:8,7:7,8:3},
+                                            {1:8,2:7,3:6,4:2,5:5,6:8,7:7,8:3}),
+                                cliffsDelta({1:8,2:7,3:6,4:2,5:5,6:8,7:7,8:3},
+                                            {1:8,2:7,3:6,4:2,5:5,6:8,7:7,8:3})))
+    print("\t\tTrue \t{}\t{}".format(bootstrap({1:8,2:7,3:6,4:2,5:5,6:8,7:7,8:3},
+                                            {1:9,2:9,3:7,4:8,5:10,6:9,7:6}),
+                                cliffsDelta({1:8,2:7,3:6,4:2,5:5,6:8,7:7,8:3},
+                                            {1:9,2:9,3:7,4:8,5:10,6:9,7:6})))
+    print("\t\tFalse\t{}\t{}".format(bootstrap({1:0.34, 2:0.49, 3:0.51, 4:0.6,   5:.34,  6:.49,  7:.51, 8:.6}, 
+                                             {1:0.6,  2:0.7,  3:0.8,  4:0.9,   5:.6,   6:.7,   7:.8,  8:.9}),
+                                 cliffsDelta({1:0.34, 2:0.49, 3:0.51, 4:0.6,   5:.34,  6:.49,  7:.51, 8:.6}, 
+                                             {1:0.6,  2:0.7,  3:0.8,  4:0.9,   5:.6,   6:.7,   7:.8,  8:.9})))
+eg['basic'] = basicfun
+
+def prefun():
+    print('\neg3')
+    d = 1
+    for i in range(1,11):
+        t1,t2={},{}
+        for j in range(1,33):
+            t1[1+len(t1)]=gaussian(10,1)
+            t2[1+len(t2)]=gaussian(d*10,1)
+        d=float(format(d,'.2f'))
+        print("\t{}\t{} {} {}".format(d,d<1.1,bootstrap(t1,t2),bootstrap(t1,t1)))
+        d+=0.05
+        
+eg['pre']=prefun
+
+for k, fun in eg.items():
+    eg['ok']()
+    print("\n"+str(k))
+    fun()
