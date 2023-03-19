@@ -290,6 +290,72 @@ def prefun():
         
 eg['pre']=prefun
 
+def fivefun():
+    for _,rx in (tiles(scottKnot({
+            RX({0.34,0.49,0.51,0.6,.34,.49,.51,.6},"rx1"),
+            RX({0.6,0.7,0.8,0.9,.6,.7,.8,.9},"rx2"),
+            RX({0.15,0.25,0.4,0.35,0.15,0.25,0.4,0.35},"rx3"),
+            RX({0.6,0.7,0.8,0.9,0.6,0.7,0.8,0.9},"rx4"),
+            RX({0.1,0.2,0.3,0.4,0.1,0.2,0.3,0.4},"rx5")}))).items():
+        print(rx.name,rx.rank,rx.show)
+        
+eg['five']=fivefun
+
+def sixfun():
+    for _,rx in (tiles(scottKnot({
+            RX({101,100,99,101,99.5,101,100,99,101,99.5},"rx1"),
+            RX({101,100,99,101,100,101,100,99,101,100},"rx2"),
+            RX({101,100,99.5,101,99,101,100,99.5,101,99},"rx3"),
+            RX({101,100,99,101,100,101,100,99,101,100},"rx4")}))).items():
+        print(rx.name,rx.rank,rx.show)
+        
+eg['six']=sixfun
+
+from functools import cmp_to_key
+def tilesfun():
+    rxs,a,b,c,d,e,f,g,h,j,k={},{},{},{},{},{},{},{},{},{},{}
+    for i in range(1 , 1001): a[1+len(a)] = gaussian(10,1)
+    for i in range(1 , 1001): b[1+len(b)] = gaussian(10.1,1) 
+    for i in range(1 , 1001): c[1+len(c)] = gaussian(20,1) 
+    for i in range(1 , 1001): d[1+len(d)] = gaussian(30,1) 
+    for i in range(1 , 1001): e[1+len(e)] = gaussian(30.1,1) 
+    for i in range(1 , 1001): f[1+len(f)] = gaussian(10,1) 
+    for i in range(1 , 1001): g[1+len(g)] = gaussian(10,1) 
+    for i in range(1 , 1001): h[1+len(h)] = gaussian(40,1) 
+    for i in range(1 , 1001): j[1+len(j)] = gaussian(40,3) 
+    for i in range(1 , 1001): k[1+len(k)] = gaussian(10,1) 
+    for dict in {a,b,c,d,e,f,g,h,j,k}:
+        for k,v in dict.items():
+            rxs[k] =  RX(v,"rx" + k)
+    #def fun(a , b):
+        #return mid(a) - mid(b)
+    #rxs.sort(key=cmp_to_key(fun))
+    sortedrxs = sorted(rxs.items(), key = lambda item:mid(item[1]))
+    for _,rx in tiles(sortedrxs).items():
+        print("",rx.name,rx.show)
+
+eg['tiles']=tilesfun
+
+def skfun():
+    rxs,a,b,c,d,e,f,g,h,j,k={},{},{},{},{},{},{},{},{},{},{}
+    for i in range(1 , 1001): a[1+len(a)] = gaussian(10,1)
+    for i in range(1 , 1001): b[1+len(b)] = gaussian(10.1,1) 
+    for i in range(1 , 1001): c[1+len(c)] = gaussian(20,1) 
+    for i in range(1 , 1001): d[1+len(d)] = gaussian(30,1) 
+    for i in range(1 , 1001): e[1+len(e)] = gaussian(30.1,1) 
+    for i in range(1 , 1001): f[1+len(f)] = gaussian(10,1) 
+    for i in range(1 , 1001): g[1+len(g)] = gaussian(10,1) 
+    for i in range(1 , 1001): h[1+len(h)] = gaussian(40,1) 
+    for i in range(1 , 1001): j[1+len(j)] = gaussian(40,3) 
+    for i in range(1 , 1001): k[1+len(k)] = gaussian(10,1) 
+    for dict in [a,b,c,d,e,f,g,h,j,k]:
+        for k,v in dict.items():
+            rxs[k] =  RX(v,"rx" + k)
+    for _,rx in tiles((scottKnot(rxs))).items():
+        print("",rx['rank'],rx['name'],rx['show'])
+
+eg['sk']=skfun
+
 for k, fun in eg.items():
     eg['ok']()
     print("\n"+str(k))
