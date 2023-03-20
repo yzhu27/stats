@@ -123,13 +123,13 @@ def dictsort(d):
 
 
 def RX(t, s):
-    dictsort(t)
+    new = dictsort(t)
     return {
         'name':s if s is not None else "",
         'rank':0,
         'n':len(t),
         'show':'',
-        'has':t
+        'has':new
     }
 
 def mid(t):
@@ -143,21 +143,22 @@ def div(t):
 
 def merge(rx1, rx2):
     rx3 = RX({}, rx1['name'])
-    for _,t in rx1['has'].items():
-        for _,x in t.items():
+    for _,x in rx1['has'].items():
+        #for _,x in t.items():
             rx3['has'][len(rx3['has'])+1] = x
-    for _,t in rx2['has'].items():
-        for _,x in t.items():
+    for _,x in rx2['has'].items():
+        #for _,x in t.items():
             rx3['has'][len(rx3['has'])+1] = x
     rx3['has'] = dictsort(rx3['has'])
     rx3['n'] = len(rx3['has'])
     return rx3
 
 def scottKnot(rxs):
+    #print(rxs) -> {'1': {'name': 'rx1', 'rank': 0, 'n': 8, 'show': '', 'has': {1: 0.34, 2: 0.34, 3: 0.49, 4: 0.49, 5: 0.51, 6: 0.51, 7: 0.6, 8: 0.6}}, '2': {'name': 'rx2', 'rank': 0, 'n': 8, 'show': '', 'has': {1: 0.6, 2: 0.6, 3: 0.7, 4: 0.7, 5: 0.8, 6: 0.8, 7: 0.9, 8: 0.9}}, '3': {'name': 'rx3', 'rank': 0, 'n': 8, 'show': '', 'has': {1: 0.15, 2: 0.15, 3: 0.25, 4: 0.25, 5: 0.35, 6: 0.35, 7: 0.4, 8: 0.4}}, '4': {'name': 'rx4', 'rank': 0, 'n': 8, 'show': '', 'has': {1: 0.6, 2: 0.6, 3: 0.7, 4: 0.7, 5: 0.8, 6: 0.8, 7: 0.9, 8: 0.9}}, '5': {'name': 'rx5', 'rank': 0, 'n': 8, 'show': '', 'has': {1: 0.1, 2: 0.1, 3: 0.2, 4: 0.2, 5: 0.3, 6: 0.3, 7: 0.4, 8: 0.4}}}
     def merges(i, j):
-        out = RX({},rxs[i]['name'])
+        out = RX({},newrxs[i]['name'])
         for k in range(i,j+1):
-            out = merge(out, rxs[j]) # shouldn't here be k?
+            out = merge(out, newrxs[j]) # shouldn't here be k?
         return out
     def same(lo, cut, hi):
         l = merges(lo, cut)
@@ -165,12 +166,13 @@ def scottKnot(rxs):
         return cliffsDelta(l['has'],r['has']) and bootstrap(l['has'], r['has'])
     
     def recurse(lo, hi, rank):
+        cut = None
         b4 = merges(lo, hi)
         best = 0
         for j in range(lo,hi+1):
             if j < hi:
                 l = merges(lo, j)
-                r = (j+1, hi)
+                r = merges(j+1, hi)
                 now = (l['n']*(mid(l) - mid(b4))**2 + r['n']*(mid(r) - mid(b4))**2) / (l['n'] + r['n'])
                 if now > best:
                     if abs(mid(l) - mid(r)) >= cohen:
@@ -180,31 +182,34 @@ def scottKnot(rxs):
             rank = recurse(cut+1, hi ,rank)
         else:
             for i in range(lo, hi+1):
-                rxs[i]['rank']=rank
+                newrxs[i]['rank']=rank
+        return rank
     sortedrxs = sorted(rxs.items(), key = lambda item:mid(item[1]))
     newrxs = {}
     n=0
     for k,v in sortedrxs:
         n+=1
         newrxs[n]=v
+    #print(newrxs) -> {1: {'name': 'rx5', 'rank': 0, 'n': 8, 'show': '', 'has': {1: 0.1, 2: 0.1, 3: 0.2, 4: 0.2, 5: 0.3, 6: 0.3, 7: 0.4, 8: 0.4}}, 2: {'name': 'rx3', 'rank': 0, 'n': 8, 'show': '', 'has': {1: 0.15, 2: 0.15, 3: 0.25, 4: 0.25, 5: 0.35, 6: 0.35, 7: 0.4, 8: 0.4}}, 3: {'name': 'rx1', 'rank': 0, 'n': 8, 'show': '', 'has': {1: 0.34, 2: 0.34, 3: 0.49, 4: 0.49, 5: 0.51, 6: 0.51, 7: 0.6, 8: 0.6}}, 4: {'name': 'rx2', 'rank': 0, 'n': 8, 'show': '', 'has': {1: 0.6, 2: 0.6, 3: 0.7, 4: 0.7, 5: 0.8, 6: 0.8, 7: 0.9, 8: 0.9}}, 5: {'name': 'rx4', 'rank': 0, 'n': 8, 'show': '', 'has': {1: 0.6, 2: 0.6, 3: 0.7, 4: 0.7, 5: 0.8, 6: 0.8, 7: 0.9, 8: 0.9}}}
     cohen = div(merges(1, len(newrxs))) * the['cohen']
     recurse(1, len(rxs), 1)
     return newrxs
 
 def tiles(rxs):
-    lo, hi = -math.inf, math.inf
+    lo, hi = math.inf, -math.inf
     for _,rx in rxs.items():
-        lo = math.min(lo,rx['has'][1])
-        hi = math.hi(hi, rx['has'][len(rx['has'])])
+        lo = min(lo,rx['has'][1])
+        hi = max(hi, rx['has'][len(rx['has'])])
+    #print(lo,hi) -> 0.1 , 0.9    
     for _,rx in rxs.items():
         t = rx['has']
         u = {}
         def of(x, most):
-            return math.max(1, math.min(most, x))
+            return max(1, min(most, x))
         def at(x):
             return t[of(int(len(t)*x), len(t))]
         def pos(x):
-            return math.floor(of(the['width']*(x-lo)/int(hi-lo+1E-32), the['width']))
+            return math.floor(of(int(the['width']*(x-lo)/(hi-lo+1E-32)), the['width']))
         for i in range(1, the['width']+1):
             u[1+len(u)]=" "
         a,b,c,d,e = at(.1), at(.3), at(.5), at(.7), at(.9) 
@@ -215,10 +220,12 @@ def tiles(rxs):
             u[i]="-"
         u[the['width']//2] = "|"
         u[C] = "*"
-        import string
-        rx['show'] = str(u)+"{"+string.format(the['fmt'],a)
-        for _,x in {b,c,d,e}.items():
-            rx['show'] += "," + string.format(the['fmt'],x)
+        tmp = ''
+        for sym in u.values():
+            tmp += sym
+        rx['show'] = tmp+" {"+ (the['Fmt'] % a)
+        for _,x in {'0':b,'1':c,'2':d,'3':e}.items():
+            rx['show'] += ", " + (the['Fmt'] % x)
         rx['show'] += "}"
     return rxs
 
@@ -259,7 +266,7 @@ def bootmufun():
         cl = cliffsDelta(a, b)
         bs = bootstrap(a, b)
         print(" {} 1 {}  {} {}".format(mu,cl,bs,cl and bs))
-# eg['bootmu'] = bootmufun
+eg['bootmu'] = bootmufun
 
 def basicfun():
     print("\t\tTrue \t{}\t{}".format(bootstrap({1:8,2:7,3:6,4:2,5:5,6:8,7:7,8:3},
@@ -291,22 +298,23 @@ def prefun():
 eg['pre']=prefun
 
 def fivefun():
-    for _,rx in (tiles(scottKnot({
-            RX({0.34,0.49,0.51,0.6,.34,.49,.51,.6},"rx1"),
-            RX({0.6,0.7,0.8,0.9,.6,.7,.8,.9},"rx2"),
-            RX({0.15,0.25,0.4,0.35,0.15,0.25,0.4,0.35},"rx3"),
-            RX({0.6,0.7,0.8,0.9,0.6,0.7,0.8,0.9},"rx4"),
-            RX({0.1,0.2,0.3,0.4,0.1,0.2,0.3,0.4},"rx5")}))).items():
+    #print(RX({'0':0.34,'1':0.49,'2':0.51,'3':0.6,'4':0.34,'5':0.49,'6':0.51,'7':0.6},"rx1"))
+    for _,rx in tiles(scottKnot({
+            '1':RX({'0':0.34,'1':0.49,'2':0.51,'3':0.6,'4':0.34,'5':0.49,'6':0.51,'7':0.6},"rx1"),
+            '2':RX({'0':0.6,'1':0.7,'2':0.8,'3':0.9,'4':0.6,'5':0.7,'6':0.8,'7':0.9},"rx2"),
+            '3':RX({'0':0.15,'1':0.25,'2':0.4,'3':0.35,'4':0.15,'5':0.25,'6':0.4,'7':0.35},"rx3"),
+            '4':RX({'0':0.6,'1':0.7,'2':0.8,'3':0.9,'4':0.6,'5':0.7,'6':0.8,'7':0.9},"rx4"),
+            '5':RX({'0':0.1,'1':0.2,'2':0.3,'3':0.4,'4':0.1,'5':0.2,'6':0.3,'7':0.4},"rx5")})).items():
         print(rx['name'],rx['rank'],rx['show'])
         
 eg['five']=fivefun
 
 def sixfun():
     for _,rx in (tiles(scottKnot({
-            RX({101,100,99,101,99.5,101,100,99,101,99.5},"rx1"),
-            RX({101,100,99,101,100,101,100,99,101,100},"rx2"),
-            RX({101,100,99.5,101,99,101,100,99.5,101,99},"rx3"),
-            RX({101,100,99,101,100,101,100,99,101,100},"rx4")}))).items():
+            '1':RX({'0':101,'1':100,'2':99,'3':101,'4':99.5,'5':101,'6':100,'7':99,'8':101,'9':99.5},"rx1"),
+            '3':RX({'0':101,'1':100,'2':99.5,'3':101,'4':99,'5':101,'6':100,'7':99.5,'8':101,'9':99},"rx3"),
+            '2':RX({'0':101,'1':100,'2':99,'3':101,'4':100,'5':101,'6':100,'7':99,'8':101,'9':100},"rx2"),           
+            '4':RX({'0':101,'1':100,'2':99,'3':101,'4':100,'5':101,'6':100,'7':99,'8':101,'9':100},"rx4")}))).items():
         print(rx['name'],rx['rank'],rx['show'])
         
 eg['six']=sixfun
@@ -324,14 +332,18 @@ def tilesfun():
     for i in range(1 , 1001): h[1+len(h)] = gaussian(40,1) 
     for i in range(1 , 1001): j[1+len(j)] = gaussian(40,3) 
     for i in range(1 , 1001): k[1+len(k)] = gaussian(10,1) 
-    for dict in {a,b,c,d,e,f,g,h,j,k}:
-        for k,v in dict.items():
-            rxs[k] =  RX(v,"rx" + k)
+    for k,v in enumerate([a,b,c,d,e,f,g,h,j,k] , 1):
+        rxs[k] =  RX(v , "rx"+str(k))
     #def fun(a , b):
         #return mid(a) - mid(b)
     #rxs.sort(key=cmp_to_key(fun))
     sortedrxs = sorted(rxs.items(), key = lambda item:mid(item[1]))
-    for _,rx in tiles(sortedrxs).items():
+    newrxs = {}
+    n=0
+    for k,v in sortedrxs:
+        n+=1
+        newrxs[n]=v
+    for _,rx in tiles(newrxs).items():
         print("",rx['name'],rx['show'])
 
 eg['tiles']=tilesfun
@@ -348,9 +360,8 @@ def skfun():
     for i in range(1 , 1001): h[1+len(h)] = gaussian(40,1) 
     for i in range(1 , 1001): j[1+len(j)] = gaussian(40,3) 
     for i in range(1 , 1001): k[1+len(k)] = gaussian(10,1) 
-    for dict in [a,b,c,d,e,f,g,h,j,k]:
-        for k,v in dict.items():
-            rxs[k] =  RX(v,"rx" + k)
+    for k,v in enumerate([a,b,c,d,e,f,g,h,j,k] , 1):
+        rxs[k] =  RX(v , "rx"+str(k))
     for _,rx in tiles((scottKnot(rxs))).items():
         print("",rx['rank'],rx['name'],rx['show'])
 
