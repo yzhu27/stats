@@ -1,6 +1,6 @@
 # stats
 
-<!-- ![Build test](https://img.shields.io/github/actions/workflow/status/yzhu27/xpln/test.yml) -->
+![Build test](https://img.shields.io/github/actions/workflow/status/yzhu27/stats/test.yml)
 ![MIT license](https://img.shields.io/github/license/yzhu27/stats)
 ![GitHub top language](https://img.shields.io/github/languages/top/yzhu27/stats)
 ![GitHub contributors](https://img.shields.io/github/contributors/yzhu27/stats)
