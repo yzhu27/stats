@@ -11,7 +11,7 @@ Since this work is based on previous HWs, we do not explain details, in order to
 
 ## Expected result:
 
-* [Expected result](https://github.com/timm/tested/blob/main/etc/out/xpln.out):
+* [Expected result](https://github.com/timm/tested/blob/main/etc/out/stats.out):
 
 ![expected result img](./etc/image/expected_result.png)
 
