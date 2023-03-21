@@ -31,7 +31,7 @@ def erf(x):
     y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*math.exp(-x*x)
     return sign*y
 
-def gaussian(mu=0, sd=1):
+def gaussian(mu=0.0, sd=1.0):
     # --> n; return a sample from a Gaussian with mean `mu` and sd `sd`
     return mu + sd * math.sqrt(-2*math.log(random.random())) * math.cos(2*math.pi*random.random())
 
@@ -39,7 +39,7 @@ def samples(t, n=None):
     u = {}
     if len(t)!=0:
         for i in range(1, n+1 if n is not None else len(t)+1):
-            u[i]=int(len(t)*random.random()) # this is fast but not accurate
+            u[i]=t[math.ceil(len(t)*random.random())] # this is fast but not accurate
             # u[i]=random.choice(list(t.values())) # this is extreme slow but gives correct answer
     return u
 
@@ -243,6 +243,11 @@ def numfun():
     n = NUM({1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,10:10})
     print("  {}  {}  {}".format(n['n'],n['mu'],n['sd']))
 eg['num'] = numfun
+
+def samplesfun():
+    for i in range(1,11):
+        print(list(samples({1:'a',2:'b',3:'c',4:'d',5:'e'}).values()))
+eg['samples'] = samplesfun
 
 def gaussfun():
     t = {}
