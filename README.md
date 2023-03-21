@@ -19,7 +19,7 @@ Since this work is based on previous HWs, we do not explain details, in order to
 
 ## Result:
 
-* [result](https://github.com/yzhu27/xpln/blob/main/etc/out/xpln.out):
+* [result](https://github.com/yzhu27/stats/blob/main/etc/out/stats.out):
 
 ![result img](./etc/image/result.png)
 
